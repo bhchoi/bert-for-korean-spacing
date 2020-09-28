@@ -5,34 +5,34 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 
 from preprocessor import Preprocessor
-from dataset import NerDataset
-from net import NerBertModel
+from dataset import SpacingDataset
+from net import SpacingBertModel
 
 
 def get_dataloader(data_path, preprocessor, batch_size):
-    dataset = NerDataset(data_path, preprocessor)
+    dataset = SpacingDataset(data_path, preprocessor)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return dataloader
 
 
-def main(args):
-    preprocessor = Preprocessor(args.bert_model, args.max_len)
+def main(config):
+    preprocessor = Preprocessor(config.bert_model, config.max_len)
     train_dataloader = get_dataloader(
-        args.train_data_path, preprocessor, args.train_batch_size
+        config.train_data_path, preprocessor, config.train_batch_size
     )
     val_dataloader = get_dataloader(
-        args.val_data_path, preprocessor, args.train_batch_size
+        argconfigs.val_data_path, preprocessor, config.train_batch_size
     )
     test_dataloader = get_dataloader(
-        args.test_data_path, preprocessor, args.eval_batch_size
+        config.test_data_path, preprocessor, config.eval_batch_size
     )
 
-    bert_finetuner = NerBertModel(
-        args, train_dataloader, val_dataloader, test_dataloader
+    bert_finetuner = SpacingBertModel(
+        config, train_dataloader, val_dataloader, test_dataloader
     )
 
-    logger = TensorBoardLogger(save_dir=args.log_path, version=1, name=args.task)
+    logger = TensorBoardLogger(save_dir=config.log_path, version=1, name=config.task)
 
     checkpoint_callback = ModelCheckpoint(
         filepath="checkpoints/{epoch}_{val_acc:3f}",
@@ -52,7 +52,7 @@ def main(args):
     )
 
     trainer = pl.Trainer(
-        gpus=args.gpus,
+        gpus=config.gpus,
         # distributed_backend="",
         checkpoint_callback=checkpoint_callback,
         early_stop_callback=early_stop_callback,

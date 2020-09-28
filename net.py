@@ -13,7 +13,7 @@ from itertools import chain
 from utils import load_slot_labels
 
 
-class NerBertModel(pl.LightningModule):
+class SpacingBertModel(pl.LightningModule):
     def __init__(
         self,
         args: argparse,

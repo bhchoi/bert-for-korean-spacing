@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 from utils import load_slot_labels
 
 
-class NerDataset(Dataset):
+class SpacingDataset(Dataset):
     def __init__(self, data_path: str, preprocessor: Preprocessor):
         self.sentences = []
         self.preprocessor = preprocessor
