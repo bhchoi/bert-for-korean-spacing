@@ -1,7 +1,12 @@
-# bert-for-korean-spacing
+## bert-for-korean-spacing
 Pretrained BERT를 이용한 한국어 띄어쓰기
+* pytorch-lightning
+* omegaconf
+* transformers
+* KcBERT
 
 ## Dataset
+* 
 
 ## Train
 * train_config.yaml
@@ -37,6 +42,8 @@ dropout_rate: 0.1
 ```python
 python eval.py
 ```
+## Results
+*
 
 ## Reference
 * https://github.com/Beomi/KcBERT
