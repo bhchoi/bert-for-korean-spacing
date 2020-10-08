@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import argparse
 import pytorch_lightning as pl
 from transformers import BertConfig, BertModel, AdamW
 from torch.utils.data import DataLoader
@@ -13,13 +12,13 @@ from utils import load_slot_labels
 class SpacingBertModel(pl.LightningModule):
     def __init__(
         self,
-        args: argparse,
+        config,
         ner_train_dataloader: DataLoader,
         ner_val_dataloader: DataLoader,
         ner_test_dataloader: DataLoader,
     ):
         super().__init__()
-        self.args = args
+        self.config = config
         self.ner_train_dataloader = ner_train_dataloader
         self.ner_val_dataloader = ner_val_dataloader
         self.ner_test_dataloader = ner_test_dataloader
@@ -27,11 +26,11 @@ class SpacingBertModel(pl.LightningModule):
         self.ignore_index = torch.nn.CrossEntropyLoss().ignore_index
 
         self.config = BertConfig.from_pretrained(
-            self.args.bert_model, num_labels=len(self.slot_labels_type)
+            self.config.bert_model, num_labels=len(self.slot_labels_type)
         )
-        # self.model = BertModel.from_pretrained(self.args.bert_model, config=self.config)
-        self.model = BertModel.from_pretrained(self.args.bert_model)
-        self.dropout = nn.Dropout(self.args.dropout_rate)
+        # self.model = BertModel.from_pretrained(self.config.bert_model, config=self.config)
+        self.model = BertModel.from_pretrained(self.config.bert_model)
+        self.dropout = nn.Dropout(self.config.dropout_rate)
         self.linear = nn.Linear(self.config.hidden_size, len(load_slot_labels()))
 
     def forward(self, input_ids, attention_mask, token_type_ids):
