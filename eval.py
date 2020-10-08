@@ -1,10 +1,7 @@
 import torch
 import pytorch_lightning as pl
 from omegaconf import OmegaConf
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from torch import Storage
-from torch.utils.data import DataLoader, RandomSampler
+from torch.utils.data import DataLoader
 
 from preprocessor import Preprocessor
 from dataset import SpacingDataset
