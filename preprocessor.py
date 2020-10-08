@@ -1,24 +1,15 @@
 import torch
 from transformers import AutoTokenizer
-from tokenization_kobert import KoBertTokenizer
 
 
 class Preprocessor:
     def __init__(self, model_type, max_len):
-        # self.tokenizer = KoBertTokenizer.from_pretrained(
-        #     model_type, do_lower_case=False
-        # )
         self.tokenizer = AutoTokenizer.from_pretrained(model_type)
         self.max_len = max_len
         self.ignore_index = torch.nn.CrossEntropyLoss().ignore_index
 
     def get_input_features(self, sentence, tags):
 
-        """
-        1. input_id
-        1)sentence를 token으로 나누기
-            1)word가 token으로 분리되면 tag에 pad 추가
-        """
         input_tokens = []
         slot_labels = []
 
