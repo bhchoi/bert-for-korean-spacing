@@ -1,4 +1,3 @@
-from numpy.lib.function_base import average
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,9 +5,7 @@ import argparse
 import pytorch_lightning as pl
 from transformers import BertConfig, BertModel, AdamW
 from torch.utils.data import DataLoader
-from seqeval.metrics import f1_score as seqeval_f1_score
-from sklearn.metrics import f1_score as sklearn_f1_score
-from itertools import chain
+from seqeval.metrics import f1_score
 
 from utils import load_slot_labels
 
@@ -60,10 +57,7 @@ class SpacingBertModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        active_loss = attention_mask.view(-1) == 1
-        active_logits = outputs.view(-1, len(self.slot_labels_type))[active_loss]
-        active_labels = slot_labels.view(-1)[active_loss]
-        loss = F.cross_entropy(active_logits, active_labels)
+        loss = self._calculate_loss(outputs, slot_labels)
         tensorboard_logs = {"train_loss": loss}
 
         return {"loss": loss, "log": tensorboard_logs}
@@ -78,47 +72,22 @@ class SpacingBertModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        active_loss = attention_mask.view(-1) == 1
-        active_logits = outputs.view(-1, len(self.slot_labels_type))[active_loss]
-        active_labels = slot_labels.view(-1)[active_loss]
-        loss = F.cross_entropy(active_logits, active_labels)
-
-        a, y_hat = torch.max(outputs, dim=2)
-        y_hat = y_hat.detach().cpu().numpy()
-        slot_label_ids = slot_labels.detach().cpu().numpy()
-
-        slot_label_map = {i: label for i, label in enumerate(self.slot_labels_type)}
-        slot_gt_labels = [[] for _ in range(slot_label_ids.shape[0])]
-        slot_pred_labels = [[] for _ in range(slot_label_ids.shape[0])]
-
-        for i in range(slot_label_ids.shape[0]):
-            for j in range(slot_label_ids.shape[1]):
-                if slot_label_ids[i, j] != self.ignore_index:
-                    slot_gt_labels[i].append(slot_label_map[slot_label_ids[i][j]])
-                    slot_pred_labels[i].append(slot_label_map[y_hat[i][j]])
-
-        val_acc = torch.tensor(
-            seqeval_f1_score(slot_gt_labels, slot_pred_labels), dtype=torch.float32
-        )
-        token_val_acc = sklearn_f1_score(
-            list(chain.from_iterable(slot_gt_labels)),
-            list(chain.from_iterable(slot_pred_labels)),
-            average="micro",
+        loss = self._calculate_loss(outputs, slot_labels)
+        gt_slot_labels, pred_slot_labels = self._convert_ids_to_labels(
+            outputs, slot_labels
         )
 
-        token_val_acc = torch.tensor(token_val_acc, dtype=torch.float32)
+        val_acc = self._f1_score(gt_slot_labels, pred_slot_labels)
 
-        return {"val_loss": loss, "val_acc": val_acc, "token_val_acc": token_val_acc}
+        return {"val_loss": loss, "val_acc": val_acc}
 
     def validation_epoch_end(self, outputs):
         val_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         val_acc = torch.stack([x["val_acc"] for x in outputs]).mean()
-        token_val_acc = torch.stack([x["token_val_acc"] for x in outputs]).mean()
 
         tensorboard_log = {
             "val_loss": val_loss,
             "val_acc": val_acc,
-            "token_val_acc": token_val_acc,
         }
 
         return {"val_loss": val_loss, "progress_bar": tensorboard_log}
@@ -133,48 +102,22 @@ class SpacingBertModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        active_loss = attention_mask.view(-1) == 1
-        active_logits = outputs.view(-1, len(self.slot_labels))[active_loss]
-        active_labels = outputs.view(-1)[active_loss]
-        loss = F.cross_entropy(active_logits, active_labels)
-
-        a, y_hat = torch.max(outputs, dim=2)
-        y_hat = y_hat.detach().cpu().numpy()
-        slot_label_ids = slot_labels.detach().cpu().numpy()
-
-        slot_label_map = {i: label for i, label in enumerate(self.slot_labels)}
-        slot_gt_labels = [[] for _ in range(slot_label_ids.shape[0])]
-        slot_pred_labels = [[] for _ in range(slot_label_ids.shape[0])]
-
-        for i in range(slot_label_ids.shape[0]):
-            for j in range(slot_label_ids.shape[1]):
-                if slot_label_ids[i, j] != self.ignore_index:
-                    slot_gt_labels[i].append(slot_label_map[slot_gt_labels[i][j]])
-                    slot_pred_labels[i].append(slot_label_map[y_hat[i][j]])
-
-        test_acc = torch.tenfor(
-            seqeval_f1_score(slot_gt_labels, slot_pred_labels), dtype=torch.float32
-        )
-        token_test_acc = sklearn_f1_score(
-            list(chain.from_iterable(slot_gt_labels)),
-            list(chain.from_iterable(slot_pred_labels)),
-            average="micro",
+        gt_slot_labels, pred_slot_labels = self._convert_ids_to_labels(
+            outputs, slot_labels
         )
 
-        token_test_acc = torch.tensor(token_test_acc, dtype=torch.float32)
+        test_acc = self._f1_score(gt_slot_labels, pred_slot_labels)
 
         test_step_outputs = {
             "test_acc": test_acc,
-            "token_test_acc": token_test_acc,
-            "gt_labels": slot_gt_labels,
-            "pred_labels": slot_pred_labels,
+            "gt_labels": gt_slot_labels,
+            "pred_labels": pred_slot_labels,
         }
 
         return test_step_outputs
 
     def test_epoch_end(self, outputs):
         test_acc = torch.stack([x["test_acc"] for x in outputs]).mean()
-        token_test_acc = torch.stack([x["token_test_acc"] for x in outputs]).mean()
 
         gt_labels = []
         pred_labels = []
@@ -184,7 +127,6 @@ class SpacingBertModel(pl.LightningModule):
 
         test_step_outputs = {
             "test_acc": test_acc,
-            "token_test_acc": token_test_acc,
             "gt_labels": gt_labels,
             "pred_labels": pred_labels,
         }
@@ -202,3 +144,35 @@ class SpacingBertModel(pl.LightningModule):
 
     def test_dataloader(self):
         return self.ner_test_dataloader
+
+    def _calculate_loss(self, outputs, labels):
+        # active_loss = attention_mask.view(-1) == 1
+        # active_logits = outputs.view(-1, len(self.slot_labels_type))[active_loss]
+        # active_labels = slot_labels.view(-1)[active_loss]
+        active_logits = outputs.view(-1, len(self.slot_labels_type))
+        active_labels = labels.view(-1)
+        loss = F.cross_entropy(active_logits, active_labels)
+
+        return loss
+
+    def _f1_score(self, gt_slot_labels, pred_slot_labels):
+        return torch.tensor(
+            f1_score(gt_slot_labels, pred_slot_labels), dtype=torch.float32
+        )
+
+    def _convert_ids_to_labels(self, outputs, slot_labels):
+        _, y_hat = torch.max(outputs, dim=2)
+        y_hat = y_hat.detach().cpu().numpy()
+        slot_label_ids = slot_labels.detach().cpu().numpy()
+
+        slot_label_map = {i: label for i, label in enumerate(self.slot_labels_type)}
+        slot_gt_labels = [[] for _ in range(slot_label_ids.shape[0])]
+        slot_pred_labels = [[] for _ in range(slot_label_ids.shape[0])]
+
+        for i in range(slot_label_ids.shape[0]):
+            for j in range(slot_label_ids.shape[1]):
+                if slot_label_ids[i, j] != self.ignore_index:
+                    slot_gt_labels[i].append(slot_label_map[slot_label_ids[i][j]])
+                    slot_pred_labels[i].append(slot_label_map[y_hat[i][j]])
+
+        return slot_gt_labels, slot_pred_labels
