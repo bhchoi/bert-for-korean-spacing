@@ -1,0 +1,7 @@
+torch==1.5.1
+seqeval==0.0.12
+pytorch-lightning==0.8.5
+omegaconf==2.0.1
+sklearn==0.0
+transformers==3.0.2
+Korpora==0.1.1
