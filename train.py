@@ -12,7 +12,6 @@ from net import SpacingBertModel
 def get_dataloader(data_path, preprocessor, batch_size):
     dataset = SpacingDataset(data_path, preprocessor)
     dataloader = DataLoader(dataset, batch_size=batch_size)
-
     return dataloader
 
 
@@ -22,7 +21,7 @@ def main(config):
         config.train_data_path, preprocessor, config.train_batch_size
     )
     val_dataloader = get_dataloader(
-        argconfigs.val_data_path, preprocessor, config.train_batch_size
+        config.val_data_path, preprocessor, config.train_batch_size
     )
     test_dataloader = get_dataloader(
         config.test_data_path, preprocessor, config.eval_batch_size
