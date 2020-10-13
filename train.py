@@ -52,7 +52,7 @@ def main(config):
 
     trainer = pl.Trainer(
         gpus=config.gpus,
-        # distributed_backend="",
+        distributed_backend=config.distributed_backend,
         checkpoint_callback=checkpoint_callback,
         early_stop_callback=early_stop_callback,
         logger=logger,
