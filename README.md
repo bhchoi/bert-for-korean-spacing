@@ -9,9 +9,9 @@ BERT Pretrained model을 이용한 한국어 띄어쓰기
 ```yaml
 log_path: logs
 bert_model: monologg/kobert
-train_data_path: data/kcbert/train_data.txt
-val_data_path: data/kcbert/val_data.txt
-test_data_path: data/kcbert/test_data.txt
+train_data_path: data/train_data.txt
+val_data_path: data/val_data.txt
+test_data_path: data/test_data.txt
 max_len: 128
 train_batch_size: 64
 eval_batch_size: 64
@@ -28,7 +28,7 @@ python train.py
 * eval_config.yaml
 ```yaml
 bert_model: monologg/kobert
-test_data_path: data/kcbert/test_data.txt
+test_data_path: data/test_data.txt
 ckpt_path: checkpoints/epoch=4_val_acc=0.000000.ckpt
 max_len: 128
 eval_batch_size: 64
