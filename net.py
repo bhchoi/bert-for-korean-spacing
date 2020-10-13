@@ -25,13 +25,13 @@ class SpacingBertModel(pl.LightningModule):
         self.slot_labels_type = load_slot_labels()
         self.ignore_index = torch.nn.CrossEntropyLoss().ignore_index
 
-        self.config = BertConfig.from_pretrained(
+        self.bert_config = BertConfig.from_pretrained(
             self.config.bert_model, num_labels=len(self.slot_labels_type)
         )
         # self.model = BertModel.from_pretrained(self.config.bert_model, config=self.config)
         self.model = BertModel.from_pretrained(self.config.bert_model)
         self.dropout = nn.Dropout(self.config.dropout_rate)
-        self.linear = nn.Linear(self.config.hidden_size, len(load_slot_labels()))
+        self.linear = nn.Linear(self.bert_config.hidden_size, len(self.slot_labels_type))
 
     def forward(self, input_ids, attention_mask, token_type_ids):
         outputs = self.model(
