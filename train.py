@@ -16,7 +16,7 @@ def get_dataloader(data_path, preprocessor, batch_size):
 
 
 def main(config):
-    preprocessor = Preprocessor(config.bert_model, config.max_len)
+    preprocessor = Preprocessor(config.max_len)
     train_dataloader = get_dataloader(
         config.train_data_path, preprocessor, config.train_batch_size
     )
