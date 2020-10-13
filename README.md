@@ -2,8 +2,7 @@
 BERT Pretrained model을 이용한 한국어 띄어쓰기
 
 ## Dataset
-* KcBERT 학습용 데이터셋 중 1,250,000건 사용
-* Korpora 패키지를 이용해 다운로드
+* 
 
 ## Train
 * train_config.yaml
@@ -46,8 +45,6 @@ python eval.py
 * 
 
 ## Reference
-* https://github.com/Beomi/KcBERT
 * https://github.com/monologg/KoBERT-Transformers
-* https://github.com/ko-nlp/Korpora
 * https://github.com/PyTorchLightning/pytorch-lightning
 * https://github.com/omry/omegaconf
