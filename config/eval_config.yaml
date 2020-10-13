@@ -1,6 +1,7 @@
-bert_model: beomi/kcbert-base
+bert_model: monologg/kobert
 test_data_path: data/kcbert/test_data.txt
 ckpt_path: checkpoints/epoch=4_val_acc=0.000000.ckpt
 max_len: 128
-eval_batch_size: 32
+eval_batch_size: 64
 dropout_rate: 0.1
+gpus: 1
