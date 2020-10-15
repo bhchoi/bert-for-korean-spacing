@@ -2,7 +2,7 @@
 BERT Pretrained model을 이용한 한국어 띄어쓰기
 
 ## Dataset
-* 
+* 세종코퍼스 1,037,330 문장
 
 ## Train
 * train_config.yaml
@@ -39,10 +39,12 @@ dropout_rate: 0.1
 python eval.py
 ```
 ## Results
-* 
+* testset : 103,733건
+* SER : 0.277
+* F1 score : 0.966 
 
 ## Example
-* 
+>
 
 ## Reference
 * https://github.com/monologg/KoBERT-Transformers
