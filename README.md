@@ -44,7 +44,14 @@ python eval.py
 * F1 score : 0.966 
 
 ## Example
->
+> input  : 그냥영풍이라고써있으니까될거같지않냐?  
+> output : 그냥 영풍이라고 써 있으니까 될 거 같지 않냐?
+
+> input  : 대표적인미디어문화연구자인더글러스켈너는이렇게말하고있다.  
+> output : 대표적인 미디어 문화연구자인 더글러스 켈너는 이렇게 말하고 있다.
+
+> input  : 트렁크룸사업의성장성은이례적이다.	  
+> output : 트렁크 룸사업의 성장성은 이례적이다.
 
 ## Reference
 * https://github.com/monologg/KoBERT-Transformers
