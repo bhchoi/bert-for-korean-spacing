@@ -5,12 +5,12 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 
 from preprocessor import Preprocessor
-from dataset import SpacingDataset
+from dataset import CorpusDataset
 from net import SpacingBertModel
 
 
-def get_dataloader(data_path, preprocessor, batch_size):
-    dataset = SpacingDataset(data_path, preprocessor)
+def get_dataloader(data_path: str, preprocessor: Preprocessor, batch_size: int):
+    dataset = CorpusDataset(data_path, preprocessor)
     dataloader = DataLoader(dataset, batch_size=batch_size)
     return dataloader
 
