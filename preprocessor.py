@@ -1,14 +1,28 @@
 import torch
+from typing import List, Tuple
+
 from tokenization_kobert import KoBertTokenizer
 
 
 class Preprocessor:
-    def __init__(self, max_len):
+    def __init__(self, max_len: int):
         self.tokenizer = KoBertTokenizer.from_pretrained("monologg/kobert")
         self.max_len = max_len
         self.pad_token_id = 0
 
-    def get_input_features(self, sentence, tags):
+    def get_input_features(
+        self, sentence: List[str], tags: List[str]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """문장과 띄어쓰기 tagging에 대해 feature로 변환한다.
+
+        Args:
+            sentence: 문장
+            tags: 띄어쓰기 tagging
+
+        Returns:
+            feature를 리턴한다.
+            input_ids, attention_mask, token_type_ids, slot_labels
+        """
 
         input_tokens = []
         slot_labels = []

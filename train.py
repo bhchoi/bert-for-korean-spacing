@@ -1,3 +1,4 @@
+from typing import Callable, List, Tuple
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
@@ -9,8 +10,21 @@ from dataset import CorpusDataset
 from net import SpacingBertModel
 
 
-def get_dataloader(data_path: str, preprocessor: Preprocessor, batch_size: int):
-    dataset = CorpusDataset(data_path, preprocessor)
+def get_dataloader(
+    data_path: str, transform: Callable[[List, List], Tuple], batch_size: int
+) -> DataLoader:
+    """dataloader 생성
+
+    Args:
+        data_path: dataset 경로
+        transform: input feature로 변환해주는 funciton
+        batch_size: dataloader batch size
+
+    Returns:
+        dataloader
+    """
+    dataset = CorpusDataset(data_path, transform)
+    print(dataset[0])
     dataloader = DataLoader(dataset, batch_size=batch_size)
     return dataloader
 
@@ -18,13 +32,13 @@ def get_dataloader(data_path: str, preprocessor: Preprocessor, batch_size: int):
 def main(config):
     preprocessor = Preprocessor(config.max_len)
     train_dataloader = get_dataloader(
-        config.train_data_path, preprocessor, config.train_batch_size
+        config.train_data_path, preprocessor.get_input_features, config.train_batch_size
     )
     val_dataloader = get_dataloader(
-        config.val_data_path, preprocessor, config.train_batch_size
+        config.val_data_path, preprocessor.get_input_features, config.train_batch_size
     )
     test_dataloader = get_dataloader(
-        config.test_data_path, preprocessor, config.eval_batch_size
+        config.test_data_path, preprocessor.get_input_features, config.eval_batch_size
     )
 
     bert_finetuner = SpacingBertModel(

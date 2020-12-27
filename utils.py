@@ -1,5 +1,5 @@
-SLOT_LABELS = ["UNK", "PAD", "O", "B", "I", "E", "S"]
+from typing import List
 
-
-def load_slot_labels():
-    return SLOT_LABELS
+def load_slot_labels() -> List[str]:
+    """tag label 종류 리턴"""
+    return ["UNK", "PAD", "O", "B", "I", "E", "S"]
