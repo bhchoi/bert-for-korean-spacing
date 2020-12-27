@@ -1,12 +1,12 @@
 import torch
-from kobert_transformers import get_tokenizer
+from tokenization_kobert import KoBertTokenizer
 
 
 class Preprocessor:
     def __init__(self, max_len):
-        self.tokenizer = get_tokenizer()
+        self.tokenizer = KoBertTokenizer.from_pretrained("monologg/kobert")
         self.max_len = max_len
-        self.ignore_index = torch.nn.CrossEntropyLoss().ignore_index
+        self.pad_token_id = 0
 
     def get_input_features(self, sentence, tags):
 
@@ -25,7 +25,7 @@ class Preprocessor:
                 if i == 0:
                     slot_labels.extend([tag])
                 else:
-                    slot_labels.extend([self.ignore_index])
+                    slot_labels.extend([self.pad_token_id])
 
         # 2. max_len보다 길이가 길면 뒤에 자르기
         if len(input_tokens) > self.max_len - 2:
@@ -36,7 +36,7 @@ class Preprocessor:
         input_tokens = (
             [self.tokenizer.cls_token] + input_tokens + [self.tokenizer.sep_token]
         )
-        slot_labels = [self.ignore_index] + slot_labels + [self.ignore_index]
+        slot_labels = [self.pad_token_id] + slot_labels + [self.pad_token_id]
 
         # token을 id로 변환
         input_ids = self.tokenizer.convert_tokens_to_ids(input_tokens)
@@ -47,7 +47,7 @@ class Preprocessor:
         # padding
         pad_len = self.max_len - len(input_tokens)
         input_ids = input_ids + ([self.tokenizer.pad_token_id] * pad_len)
-        slot_labels = slot_labels + ([self.ignore_index] * pad_len)
+        slot_labels = slot_labels + ([self.pad_token_id] * pad_len)
         attention_mask = attention_mask + ([0] * pad_len)
         token_type_ids = token_type_ids + ([0] * pad_len)
 

@@ -34,20 +34,20 @@ def main(config):
     logger = TensorBoardLogger(save_dir=config.log_path, version=1, name=config.task)
 
     checkpoint_callback = ModelCheckpoint(
-        filepath="checkpoints/{epoch}_{val_acc:3f}",
+        filepath="checkpoints/{epoch}_{val_loss:3f}",
         verbose=True,
-        monitor="val_acc",
-        mode="max",
+        monitor="val_loss",
+        mode="min",
         save_top_k=3,
         prefix="",
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="val_acc",
+        monitor="val_loss",
         min_delta=0.001,
         patience=3,
         verbose=False,
-        mode="max",
+        mode="min",
     )
 
     trainer = pl.Trainer(

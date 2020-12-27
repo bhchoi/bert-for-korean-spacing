@@ -23,15 +23,18 @@ class SpacingBertModel(pl.LightningModule):
         self.ner_val_dataloader = ner_val_dataloader
         self.ner_test_dataloader = ner_test_dataloader
         self.slot_labels_type = load_slot_labels()
-        self.ignore_index = torch.nn.CrossEntropyLoss().ignore_index
+        self.pad_token_id = 0
 
         self.bert_config = BertConfig.from_pretrained(
             self.config.bert_model, num_labels=len(self.slot_labels_type)
         )
-        # self.model = BertModel.from_pretrained(self.config.bert_model, config=self.config)
-        self.model = BertModel.from_pretrained(self.config.bert_model)
+        self.model = BertModel.from_pretrained(
+            self.config.bert_model, config=self.bert_config
+        )
         self.dropout = nn.Dropout(self.config.dropout_rate)
-        self.linear = nn.Linear(self.bert_config.hidden_size, len(self.slot_labels_type))
+        self.linear = nn.Linear(
+            self.bert_config.hidden_size, len(self.slot_labels_type)
+        )
 
     def forward(self, input_ids, attention_mask, token_type_ids):
         outputs = self.model(
@@ -170,7 +173,7 @@ class SpacingBertModel(pl.LightningModule):
 
         for i in range(slot_label_ids.shape[0]):
             for j in range(slot_label_ids.shape[1]):
-                if slot_label_ids[i, j] != self.ignore_index:
+                if slot_label_ids[i, j] != self.pad_token_id:
                     slot_gt_labels[i].append(slot_label_map[slot_label_ids[i][j]])
                     slot_pred_labels[i].append(slot_label_map[y_hat[i][j]])
 
