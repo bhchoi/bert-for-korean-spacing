@@ -4,12 +4,12 @@ from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 
 from preprocessor import Preprocessor
-from dataset import SpacingDataset
+from dataset import CorpusDataset
 from net import SpacingBertModel
 
 
-def get_dataloader(data_path, preprocessor, batch_size):
-    dataset = SpacingDataset(data_path, preprocessor)
+def get_dataloader(data_path, transform, batch_size):
+    dataset = SpacingDataset(data_path, transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return dataloader
@@ -17,9 +17,9 @@ def get_dataloader(data_path, preprocessor, batch_size):
 
 def main(config):
 
-    preprocessor = Preprocessor(config.bert_model, config.max_len)
+    preprocessor = Preprocessor(config.max_len)
     test_dataloader = get_dataloader(
-        config.test_data_path, preprocessor, config.eval_batch_size
+        config.test_data_path, preprocessor.get_input_features, config.eval_batch_size
     )
     model = SpacingBertModel(config, None, None, test_dataloader)
     checkpoint = torch.load(config.ckpt_path, map_location=lambda storage, loc: storage)
