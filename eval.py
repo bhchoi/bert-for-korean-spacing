@@ -9,7 +9,7 @@ from net import SpacingBertModel
 
 
 def get_dataloader(data_path, transform, batch_size):
-    dataset = SpacingDataset(data_path, transform)
+    dataset = CorpusDataset(data_path, transform)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     return dataloader
