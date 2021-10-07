@@ -19,6 +19,7 @@ dropout_rate: 0.1
 gpus: 8
 distributed_backend: ddp
 ```
+if you don't have gpu, gpus must be change to 0 (gpus:8 -> gpus:0)
 
 ```python
 python train.py
